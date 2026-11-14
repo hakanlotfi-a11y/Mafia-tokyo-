@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>پنل مدیریت — مافیا توکیو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f8; --panel:#ffffff; --line:#e3e7ec; --line-2:#cfd6df;
+  --text:#111721; --muted:#697383; --faint:#98a2b3;
+  --accent:#2563eb; --accent-soft:#eaf0ff;
+  --ok:#0f7b52; --ok-soft:#e7f5ee;
+  --warn:#b45309; --warn-soft:#fdf2e3;
+  --danger:#b42318; --danger-soft:#fdeceb;
+  --info:#1d4ed8; --info-soft:#eaf0ff;
+  --r:10px; --sh:0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.04);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);font-size:13.5px;line-height:1.75;
+  font-family:Vazirmatn,"Segoe UI",Tahoma,sans-serif;-webkit-font-smoothing:antialiased;
+}
+.app{display:grid;grid-template-columns:266px 1fr;min-height:100vh}
+
+/* ---------- sidebar ---------- */
+.sidebar{background:var(--panel);border-left:1px solid var(--line);position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.brand{padding:16px 16px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--line-2);background:#f8fafc;
+  display:grid;place-items:center;color:var(--accent);flex:0 0 auto
+}
+.brand-mark svg{width:18px;height:18px}
+.brand-txt strong{display:block;font-size:13.5px;letter-spacing:-.01em}
+.brand-txt span{display:block;font-size:11px;color:var(--faint)}
+.nav{overflow-y:auto;padding:10px 8px;flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:8px;
+  background:transparent;color:var(--muted);font:inherit;cursor:pointer;text-align:start;transition:.14s
+}
+.nav-item svg{width:18px;height:18px;flex:0 0 auto;opacity:.85}
+.nav-item:hover{background:#f3f6fa;color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-item.active svg{opacity:1}
+.sidebar-foot{border-top:1px solid var(--line);padding:11px 14px;font-size:11.5px;color:var(--faint);line-height:1.6}
+
+/* ---------- main ---------- */
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:10px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap
+}
+.page-title{font-size:15px;font-weight:700;letter-spacing:-.01em;margin:0}
+.spacer{flex:1}
+.role-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;
+  border:1px solid var(--line-2);background:#f8fafc;font-size:11.5px;color:var(--muted)
+}
+.role-badge b{color:var(--text);font-weight:600}
+select,input,textarea{
+  font:inherit;color:var(--text);background:#fff;border:1px solid var(--line-2);
+  border-radius:8px;padding:7px 10px;outline:none;transition:.14s
+}
+select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.content{padding:20px 22px 40px;display:flex;flex-direction:column;gap:14px;max-width:1500px}
+
+/* ---------- grids ---------- */
+.grid{display:grid;gap:14px}
+.k2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+/* ---------- kpi ---------- */
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:2px}
+.kpi-label{font-size:11.5px;color:var(--muted)}
+.kpi-value{font-size:23px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.35}
+.kpi-hint{font-size:11px;color:var(--faint)}
+.kpi.ok .kpi-value{color:var(--ok)}
+.kpi.warn .kpi-value{color:var(--warn)}
+.kpi.danger .kpi-value{color:var(--danger)}
+
+/* ---------- panel ---------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font-size:13px;font-weight:700;letter-spacing:-.01em}
+.panel-body{padding:14px 15px}
+.panel-body.flush{padding:0}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+thead th{
+  text-align:start;font-weight:600;color:var(--muted);font-size:11.5px;
+  padding:9px 14px;border-bottom:1px solid var(--line);background:#fafbfc;white-space:nowrap
+}
+tbody td{padding:10px 14px;border-bottom:1px solid #eef1f5;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafbfd}
+td.empty, .empty{text-align:center;color:var(--faint);padding:26px 10px}
+.sub{font-size:11px;color:var(--faint)}
+
+/* ---------- pill ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid transparent;white-space:nowrap}
+.pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.75}
+.pill.ok{color:var(--ok);background:var(--ok-soft);border-color:#cdeada}
+.pill.warn{color:var(--warn);background:var(--warn-soft);border-color:#f3ddbd}
+.pill.danger{color:var(--danger);background:var(--danger-soft);border-color:#f6cfcb}
+.pill.info{color:var(--info);background:var(--info-soft);border-color:#d3e0fe}
+.pill.neutral{color:var(--muted);background:#f2f4f7;border-color:#e4e8ee}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--line-2);background:#fff;color:var(--text);font:inherit;font-size:12px;transition:.14s
+}
+.btn:hover{border-color:#b9c2cd;background:#fafbfd}
+.btn.sm{padding:4px 9px;font-size:11.5px;border-radius:7px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#1d55d0}
+.btn.danger{background:#fff;border-color:#f0c2bd;color:var(--danger)}
+.btn.danger:hover{background:var(--danger-soft)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{background:#f2f5f9;color:var(--text)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- list ---------- */
+.list{display:flex;flex-direction:column}
+.list-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #eef1f5}
+.list-row:last-child{border-bottom:0;padding-bottom:0}
+.list-row:first-child{padding-top:0}
+.list-main{flex:1;min-width:0}
+.list-main strong{display:block;font-size:12.5px;font-weight:600}
+.list-main span{font-size:11.5px;color:var(--muted)}
+.list-time{font-size:11px;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+.dot{width:7px;height:7px;border-radius:50%;margin-top:7px;flex:0 0 auto;background:var(--faint)}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.danger{background:var(--danger)} .dot.info{background:var(--accent)}
+
+/* ---------- role cards ---------- */
+.role-card{border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;background:#fcfdfe;display:flex;flex-direction:column;gap:8px}
+.role-card header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12.5px}
+.role-card header svg{width:17px;height:17px;color:var(--accent)}
+.role-card p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.65}
+.role-card .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);border-top:1px dashed var(--line);padding-top:8px}
+
+/* ---------- forms ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.field > label{font-size:11.5px;color:var(--muted);font-weight:600}
+.field textarea{resize:vertical;min-height:74px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef1f5}
+.switch-row:last-child{border-bottom:0}
+.switch-row .t{font-size:12.5px}
+.switch-row .d{font-size:11px;color:var(--faint)}
+.muted{color:var(--muted);font-size:12px;margin:0}
+.note{border:1px solid var(--line);background:#fafbfc;border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--muted)}
+.note b{color:var(--text)}
+
+/* ---------- modal / toast ---------- */
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(17,23,33,.38);backdrop-filter:blur(2px);display:grid;place-items:center;padding:20px}
+.modal{width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 24px 60px rgba(16,24,40,.22)}
+.modal h3{margin:0 0 4px;font-size:14px}
+.modal .modal-sub{font-size:11.5px;color:var(--faint);margin:0 0 14px}
+.modal-actions{display:flex;justify-content:flex-start;gap:8px;margin-top:16px}
+.toast-root{position:fixed;bottom:20px;left:20px;z-index:80;display:flex;flex-direction:column;gap:8px}
+.toast{
+  background:#111721;color:#fff;padding:9px 14px;border-radius:9px;font-size:12px;
+  box-shadow:0 10px 26px rgba(16,24,40,.24);animation:in .18s ease-out
+}
+.toast.warn{background:#8a4a07} .toast.danger{background:#96201a} .toast.out{opacity:0;transform:translateY(6px);transition:.22s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1150px){ .k4{grid-template-columns:repeat(2,minmax(0,1fr))} .k3{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:920px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-left:0;border-bottom:1px solid var(--line)}
+  .nav{flex-direction:row;overflow-x:auto;gap:6px}
+  .nav-item{white-space:nowrap;padding:8px 11px}
+  .sidebar-foot{display:none}
+  .k2,.k3,.k4{grid-template-columns:1fr}
+  .content{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+      </div>
+      <div class="brand-txt"><strong>مافیا توکیو</strong><span>پنل مدیریت</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot" id="sideFoot"></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 class="page-title" id="pageTitle">داشبورد</h1>
+      <div class="spacer"></div>
+      <span class="role-badge">نقش فعال: <b id="roleName">سازنده</b></span>
+      <select id="roleSwitch" aria-label="تعویض نقش">
+        <option value="creator">سازنده / مالک</option>
+        <option value="admin">ادمین</option>
+        <option value="moderator">ناظر</option>
+        <option value="support">پشتیبانی</option>
+      </select>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot" class="toast-root"></div>
+
+<script>
+/* =========================================================
+   ICONS — خطی، فنی، بدون هیچ المان تصویری/فرهنگی
+   ========================================================= */
+const I = {
+  dashboard:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S14 16 14.6 19"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.6 14.7c1.9.6 3 2 3.4 4.3"/>',
+  shield:'<path d="M12 3.4 5 6v5.3c0 4 2.9 7.4 7 8.3 4.1-.9 7-4.3 7-8.3V6l-7-2.6Z"/><path d="m9.2 12.1 2 2 3.6-4"/>',
+  target:'<circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  headphones:'<path d="M4 14.5V12a8 8 0 0 1 16 0v2.5"/><rect x="2.6" y="14" width="4" height="6.2" rx="2"/><rect x="17.4" y="14" width="4" height="6.2" rx="2"/>',
+  game:'<rect x="3" y="5" width="18" height="14" rx="3.2"/><path d="M8 10.2v3.6M6.2 12h3.6"/><circle cx="16" cy="11" r="1"/><circle cx="18" cy="14.2" r="1"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2.6"/><path d="M3 10.4h18"/><circle cx="17" cy="14.8" r="1.2"/>',
+  chart:'<path d="M4 20V9M10 20V4.5M16 20v-7M22 20H2"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.2 6h.01M3.2 12h.01M3.2 18h.01"/>',
+  sliders:'<path d="M5 4v5.6M5 14.4V20M12 4v2.6M12 11.4V20M19 4v9.6M19 18v2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="9" r="2"/><circle cx="19" cy="16" r="2"/>',
+  lock:'<rect x="4.5" y="10" width="15" height="10.2" rx="2.6"/><path d="M8 10V7.6a4 4 0 0 1 8 0V10"/>',
+  ticket:'<path d="M4 8.6A2.6 2.6 0 0 1 6.6 6h10.8A2.6 2.6 0 0 1 20 8.6v.9a2.5 2.5 0 0 0 0 5v.9a2.6 2.6 0 0 1-2.6 2.6H6.6A2.6 2.6 0 0 1 4 15.4v-.9a2.5 2.5 0 0 0 0-5v-.9Z"/><path d="M12 9.2v5.6"/>',
+  bell:'<path d="M6 9.4a6 6 0 0 1 12 0c0 3.7 1.4 5.2 1.4 5.2H4.6S6 13.1 6 9.4Z"/><path d="M9.6 18a2.5 2.5 0 0 0 4.8 0"/>',
+  search:'<circle cx="11" cy="11" r="6.6"/><path d="m20 20-4.2-4.2"/>',
+  check:'<circle cx="12" cy="12" r="8.6"/><path d="m8.4 12.4 2.5 2.5 4.7-5.6"/>',
+  rotate:'<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20.2 4.2v4.2h-4.2"/>',
+  flag:'<path d="M6 21V4M6 4h9l-1.6 3.4L15 11H6"/>',
+  server:'<rect x="3" y="4" width="18" height="6.2" rx="2"/><rect x="3" y="13.8" width="18" height="6.2" rx="2"/><path d="M6.8 7.1h.01M6.8 16.9h.01"/>',
+  alert:'<path d="M12 4.2 2.9 20h18.2L12 4.2Z"/><path d="M12 10v4.2M12 17.2h.01"/>',
+  ban:'<circle cx="12" cy="12" r="8.6"/><path d="m6.4 17.6 11.2-11.2"/>',
+  history:'<path d="M3.6 12a8.6 8.6 0 1 0 2.7-6.2"/><path d="M3.2 4.2v4.2h4.2"/><path d="M12 8v4.6l3.2 1.9"/>',
+  layers:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3.6 12.6 8.4 4.7 8.4-4.7"/>',
+  play:'<path d="M8 5.5 19 12 8 18.5v-13Z"/>',
+  eye:'<path d="M2.6 12S6 5.8 12 5.8 21.4 12 21.4 12 18 18.2 12 18.2 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="2.8"/>'
+};
+const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]||''}</svg>`;
+
+/* =========================================================
+   ROLES + MENUS (دقیقاً بر اساس اسکوپ تعریف‌شده)
+   ========================================================= */
+const ROLES = {
+  creator:{
+    label:'سازنده / مالک', short:'سازنده',
+    foot:'<b>دسترسی کامل سیستم.</b> مدیریت تمام نقش‌ها، اقتصاد، تنظیمات و زیرساخت.',
+    menus:[
+      {id:'dashboard', label:'داشبورد',            icon:'dashboard'},
+      {id:'users',     label:'مدیریت کاربران',      icon:'users'},
+      {id:'admins',    label:'مدیریت ادمین‌ها',     icon:'shield'},
+      {id:'mods',      label:'مدیریت ناظران',       icon:'target'},
+      {id:'supports',  label:'مدیریت پشتیبانی',     icon:'headphones'},
+      {id:'games',     label:'مدیریت بازی‌ها و لابی‌ها', icon:'game'},
+      {id:'economy',   label:'مدیریت اقتصاد و فروشگاه', icon:'wallet'},
+      {id:'reports',   label:'گزارش‌ها',            icon:'chart'},
+      {id:'activity',  label:'گزارش فعالیت‌ها',     icon:'list'},
+      {id:'settings',  label:'تنظیمات سیستم',       icon:'sliders'}
+    ]
+  },
+  admin:{
+    label:'ادمین', short:'ادمین',
+    foot:'ادمین به زیرساخت، مدیریت نقش‌ها و اقتصاد دسترسی ندارد.',
+    menus:[
+      {id:'dashboard',  label:'داشبورد',              icon:'dashboard'},
+      {id:'users',      label:'مدیریت کاربران',        icon:'users'},
+      {id:'blocked',    label:'مدیریت مسدودی‌ها',      icon:'lock'},
+      {id:'rated',      label:'بازی‌های امتیازی',      icon:'game'},
+      {id:'colorcodes', label:'مدیریت کد رنگی لابی',   icon:'layers'},
+      {id:'reports',    label:'گزارش‌ها',              icon:'chart'},
+      {id:'notifs',     label:'اعلان‌ها',              icon:'bell'}
+    ]
+  },
+  moderator:{
+    label:'ناظر', short:'ناظر',
+    foot:'ناظر به تنظیمات مالی، کد رنگی لابی و مدیریت نقش‌ها دسترسی ندارد.',
+    menus:[
+      {id:'dashboard', label:'داشبورد',            icon:'dashboard'},
+      {id:'active',    label:'بازی‌های فعال',       icon:'game'},
+      {id:'violations',label:'گزارش‌های تخلف',      icon:'alert'},
+      {id:'blocked',   label:'کاربران مسدودشده',    icon:'lock'},
+      {id:'actions',   label:'سابقه اقدامات',       icon:'history'}
+    ]
+  },
+  support:{
+    label:'پشتیبانی', short:'پشتیبانی',
+    foot:'پشتیبانی به بازی‌های امتیازی، کد رنگی لابی، تنظیمات سیستم و مدیریت نقش‌ها دسترسی ندارد.',
+    menus:[
+      {id:'dashboard', label:'داشبورد',            icon:'dashboard'},
+      {id:'tickets',   label:'تیکت‌ها',             icon:'ticket'},
+      {id:'search',    label:'جستجوی کاربر',        icon:'search'},
+      {id:'blocked',   label:'مدیریت مسدودی‌ها',    icon:'lock'},
+      {id:'actions',   label:'سابقه اقدامات من',    icon:'history'}
+    ]
+  }
+};
+
+/* مجوزهای عملیاتی هر نقش */
+const PERMS = {
+  creator:  ['ban','unban','code.approve','code.disable','game.enter','game.players','ticket.reply','user.search','settings','roles','economy'],
+  admin:    ['ban','unban','code.approve','code.disable','game.enter','game.players','user.search'],
+  moderator:['ban','ban.lobby','game.enter','game.players'],
+  support:  ['ticket.reply','user.search','ban','unban','ban.note']
+};
+const can = a => (PERMS[state.role]||[]).includes(a);
+
+/* =========================================================
+   STATE + MOCK DATA
+   ========================================================= */
+const state = { role:'creator', view:'dashboard' };
+
+const num = n => Number(n).toLocaleString('fa-IR');
+
+const STATUS = {
+  active:['فعال','ok'], blocked:['مسدود','danger'], warn:['اخطار','warn'], kicked:['اخراج‌شده','warn'],
+  new:['جدید','info'], open:['در حال بررسی','warn'], answered:['پاسخ داده‌شده','ok'], closed:['بسته','neutral'],
+  pending:['در انتظار تأیید','warn'], approved:['تأییدشده','ok'], disabled:['غیرفعال','neutral'],
+  running:['در حال اجرا','ok'], down:['قطع','danger'], limited:['محدود','warn'],
+  high:['بالا','danger'], mid:['متوسط','warn'], low:['پایین','neutral']
+};
+const pill = k => { const [t,tone] = STATUS[k] || [k,'neutral']; return `<span class="pill ${tone}">${t}</span>`; };
+
+const DB = {
+  users:[
+    {id:'U-1042', name:'آرش کریمی',   tag:'@arash_k',  st:'active',  games:214, joined:'1405/06/02', phone:'0912***4412'},
+    {id:'U-1043', name:'سارا محمدی',  tag:'@sara_m',   st:'active',  games:96,  joined:'1405/06/11', phone:'0935***7781'},
+    {id:'U-1044', name:'نیما رضایی',  tag:'@nima_r',   st:'blocked', games:311, joined:'1405/04/19', phone:'0901***2234'},
+    {id:'U-1045', name:'مهسا اکبری',  tag:'@mahsa_a',  st:'active',  games:44,  joined:'1405/07/01', phone:'0939***1180'},
+    {id:'U-1046', name:'پویا صادقی',  tag:'@pouya_s',  st:'warn',    games:158, joined:'1405/05/23', phone:'0912***9903'},
+    {id:'U-1047', name:'الهام نوری',  tag:'@elham_n',  st:'active',  games:12,  joined:'1405/07/14', phone:'0912***4455'},
+    {id:'U-1048', name:'کامران جعفری',tag:'@kamran_j', st:'blocked', games:502, joined:'1405/03/08', phone:'0919***6677'}
+  ],
+  staff:{
+    admins:[
+      {name:'مهدی کاظمی',   tag:'@mehdi_k', st:'active', scope:'کاربران · مسدودی‌ها · کد رنگی'},
+      {name:'رها فراهانی',  tag:'@raha_f',  st:'active', scope:'کاربران · بازی‌های امتیازی'}
+    ],
+    mods:[
+      {name:'رضا مرادی',    tag:'@reza_m',  st:'active', scope:'لابی ۰۱–۱۲', acts:148},
+      {name:'سحر بیات',     tag:'@sahar_b', st:'warn',   scope:'لابی ۱۳–۲۴', acts:73},
+      {name:'امیر توکلی',   tag:'@amir_t',  st:'active', scope:'همه لابی‌ها', acts:301}
+    ],
+    supports:[
+      {name:'نگار سلطانی',  tag:'@negar_s', st:'active', scope:'تیکت‌ها · مسدودی‌ها', open:4},
+      {name:'حسین راد',     tag:'@hossein_r', st:'active', scope:'تیکت‌ها · جستجوی کاربر', open:2}
+    ]
+  },
+  rated:[
+    {id:'G-2201', lobby:'لابی ۱۲ — شب',  players:'۹/۱۰', st:'running', budget:'۵۰۰ سکه', mod:'رضا مرادی',  t:'۱۴:۰۲'},
+    {id:'G-2202', lobby:'لابی ۰۳ — ‌روز', players:'۷/۱۰', st:'running', budget:'۲۵۰ سکه', mod:'—',         t:'۱۴:۱۸'},
+    {id:'G-2203', lobby:'لابی ۲۱ — شب',  players:'۱۰/۱۰',st:'running', budget:'۱٫۰۰۰ سکه',mod:'امیر توکلی',t:'۱۴:۲۵'},
+    {id:'G-2198', lobby:'لابی ۰۷',       players:'۱۰/۱۰',st:'closed',  budget:'۵۰۰ سکه', mod:'سحر بیات',  t:'۱۳:۱۰'}
+  ],
+  tickets:[
+    {id:'T-5012', user:'سارا محمدی',  subject:'خطای پرداخت سکه',        st:'new',      pr:'high', t:'۳ دقیقه پیش'},
+    {id:'T-5011', user:'مهسا اکبری',  subject:'بازگشت وجه خرید آیتم',   st:'open',     pr:'mid',  t:'۲۲ دقیقه پیش'},
+    {id:'T-5009', user:'الهام نوری',  subject:'درخواست رفع مسدودی',     st:'answered', pr:'high', t:'۱ ساعت پیش'},
+    {id:'T-5004', user:'آرش کریمی',   subject:'مشکل ورود به لابی',      st:'closed',   pr:'low',  t:'۳ ساعت پیش'}
+  ],
+  violations:[
+    {id:'R-882', type:'توهین در چت',      rep:'@arash_k',  tgt:'@kamran_j', lobby:'لابی ۰۷', st:'new',      t:'۱۲:۴۱'},
+    {id:'R-881', type:'تبانی در بازی',    rep:'@sara_m',   tgt:'@pouya_s',  lobby:'لابی ۱۲', st:'new',      t:'۱۲:۲۲'},
+    {id:'R-879', type:'ترک بازی (AFK)',   rep:'سیستم',     tgt:'@elham_n',  lobby:'لابی ۰۳', st:'open',     t:'۱۱:۵۵'},
+    {id:'R-877', type:'چند حساب',         rep:'@mahsa_a',  tgt:'@nima_r',   lobby:'لابی ۲۱', st:'closed',   t:'۱۰:۰۴'}
+  ],
+  blocked:[
+    {id:'U-1044', name:'نیما رضایی',  tag:'@nima_r',   reason:'تقلب در بازی',        by:'مهدی کاظمی', t:'۱۴۰۵/۰۸/۲۲', st:'blocked'},
+    {id:'U-1048', name:'کامران جعفری',tag:'@kamran_j', reason:'توهین و رفتار نامناسب',by:'رضا مرادی',  t:'۱۴۰۵/۰۸/۲۳', st:'blocked'},
+    {id:'U-1051', name:'بهنام فرجی',  tag:'@behnam_f', reason:'استفاده از چند حساب',  by:'نگار سلطانی',t:'۱۴۰۵/۰۸/۲۳', st:'blocked'}
+  ],
+  codes:[
+    {code:'#7C3AED', lobby:'لابی ۰۳', req:'مهدی کاظمی', st:'pending', t:'۱۱:۲۰'},
+    {code:'#0EA5E9', lobby:'لابی ۰۹', req:'رها فراهانی', st:'approved', t:'۰۹:۴۰'},
+    {code:'#111827', lobby:'لابی ۲۱', req:'مهدی کاظمی', st:'disabled', t:'دیروز'}
+  ],
+  actions:[
+    {id:'A-91', actor:'رضا مرادی', role:'ناظر',     act:'مسدود کردن کاربر در لابی', tgt:'@kamran_j', t:'۱۳:۵۸'},
+    {id:'A-90', actor:'مهدی کاظمی',role:'ادمین',    act:'تأیید کد رنگی لابی ۰۹',    tgt:'#0EA5E9',   t:'۰۹:۴۱'},
+    {id:'A-89', actor:'نگار سلطانی',role:'پشتیبانی',act:'رفع مسدودی کاربر',         tgt:'@elham_n',  t:'۰۹:۱۲'},
+    {id:'A-88', actor:'امیر توکلی',role:'ناظر',     act:'ورود به بازی G-2203',      tgt:'لابی ۲۱',   t:'۰۸:۵۰'},
+    {id:'A-87', actor:'ادمین',      role:'سیستم',   act:'غیرفعال‌سازی کد رنگی لابی ۲۱', tgt:'#111827', t:'دیروز'}
+  ],
+  servers:[
+    {name:'Auth / Login',    st:'running', ms:'38ms'},
+    {name:'Game Engine',     st:'running', ms:'22ms'},
+    {name:'Realtime (WS)',   st:'limited', ms:'147ms'},
+    {name:'Payments',        st:'running', ms:'61ms'}
+  ],
+  notifs:[
+    {t:'نرخ خطای Realtime در ۱۵ دقیقه گذشته ۳ برابر شده.', tone:'warn', time:'۱۴:۳۰'},
+    {t:'۳ درخواست کد رنگی لابی در انتظار بررسی است.',       tone:'info', time:'۱۴:۰۵'},
+    {t:'مسدودی کاربر @behnam_f ثبت شد.',                    tone:'ok',   time:'۱۳:۴۷'},
+    {t:'گزارش تخلف R-882 بررسی‌نشده باقی مانده.',           tone:'danger', time:'۱۳:۲۰'}
+  ],
+  economy:[
+    {item:'بسته ۵۰۰ سکه',  price:'۹۹٫۰۰۰ تومان', sold:'۱٫۲۴۰', st:'active'},
+    {item:'بسته ۲٫۰۰۰ سکه', price:'۳۴۹٫۰۰۰ تومان', sold:'۴۱۲',  st:'active'},
+    {item:'اسکین شخصیت',   price:'۱۵۰ سکه',      sold:'۲٫۸۸۰', st:'active'},
+    {item:'کارت شانس',     price:'۸۰ سکه',       sold:'۹۳۰',   st:'disabled'}
+  ]
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const table = (cols, rows, emptyText='موردی برای نمایش نیست') => `
+  <div class="table-wrap"><table>
+    <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.length
+      ? rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')
+      : `<tr><td class="empty" colspan="${cols.length}">${emptyText}</td></tr>`}</tbody>
+  </table></div>`;
+
+const panel = (title, body, actions='', flush=false) => `
+  <section class="panel">
+    <header class="panel-head"><h2>${title}</h2><div class="spacer"></div>${actions}</header>
+    <div class="panel-body ${flush?'flush':''}">${body}</div>
+  </section>`;
+
+const kpi = (label, value, hint='', tone='') => `
+  <div class="kpi ${tone}">
+    <span class="kpi-label">${label}</span>
+    <span class="kpi-value">${value}</span>
+    ${hint?`<span class="kpi-hint">${hint}</span>`:''}
+  </div>`;
+
+const listRows = items => `<div class="list">${items.map(i=>`
+  <div class="list-row">
+    <span class="dot ${i.tone||''}"></span>
+    <div class="list-main"><strong>${i.title}</strong><span>${i.meta||''}</span></div>
+    <span class="list-time">${i.time||''}</span>
+  </div>`).join('')}</div>`;
+
+const denyBtn = txt => `<button class="btn sm" disabled title="برای نقش شما مجاز نیست">${txt}</button>`;
+
+/* =========================================================
+   DASHBOARDS PER ROLE
+   ========================================================= */
+const DASH = {
+  creator(){
+    return `
+    <div class="grid k4">
+      ${kpi('کاربران آنلاین', num(842), 'اوج امروز: ۱٫۰۹۴')}
+      ${kpi('بازی‌های در حال اجرا', num(37), 'در ۲۴ لابی فعال', 'ok')}
+      ${kpi('کاربران مسدودشده', num(128), '۱۲ مسدودی در ۲۴ ساعت', 'danger')}
+      ${kpi('وضعیت سرورها', '۴ / ۴', 'همه سرویس‌ها پاسخ‌ده', 'ok')}
+    </div>
+
+    <div class="grid k2">
+      ${panel('وضعیت سرورها', table(['سرویس','وضعیت','تأخیر'],
+        DB.servers.map(s=>[s.name, pill(s.st), `<span class="sub">${s.ms}</span>`])))}
+      ${panel('گزارش فعالیت ادمین‌ها و ناظران', listRows(
+        DB.actions.slice(0,5).map(a=>({title:`${a.actor} — ${a.act}`, meta:`${a.role} · هدف: ${a.tgt}`, time:a.t, tone:a.role==='ناظر'?'info':'ok'})).map(o=>({title:o.title,meta:o.meta,time:o.time,tone:o.tone}))
+      ), `<button class="btn sm" data-go="activity">مشاهده کامل</button>`)}
+    </div>
+
+    <div class="grid k4">
+      ${roleCard('shield','ادمین‌ها', DB.staff.admins.length, 'کاربران، مسدودی‌ها، بازی‌های امتیازی، کد رنگی لابی', 'admins')}
+      ${roleCard('target','ناظران', DB.staff.mods.length, 'لابی‌ها، گزارش تخلف، مسدودی در لابی', 'mods')}
+      ${roleCard('headphones','پشتیبانی', DB.staff.supports.length, 'تیکت‌ها، جستجوی کاربر، مسدودی حساب', 'supports')}
+      ${roleCard('sliders','تنظیمات و دسترسی‌ها', '—', 'ماتریس مجوزها، سیاست‌های سیستم و امنیت', 'settings')}
+    </div>
+
+    ${panel('مدیریت کامل نقش‌ها و دسترسی‌ها', matrixTable())}`;
+  },
+
+  admin(){
+    return `
+    <div class="grid k4">
+      ${kpi('کاربران فعال امروز', num(1_284), '+۹٪ نسبت به دیروز')}
+      ${kpi('بازی‌های امتیازی فعال', num(3), '۲۴ بازیکن در جریان', 'ok')}
+      ${kpi('درخواست‌های بررسی‌نشده', num(9), 'گزارش تخلف + کد رنگی', 'warn')}
+      ${kpi('کاربران مسدودشده', num(128), '۳ مسدودی امروز', 'danger')}
+    </div>
+
+    <div class="grid k2">
+      ${panel('درخواست‌های کد رنگی لابی', table(['رنگ','لابی','درخواست‌دهنده','وضعیت','عملیات'],
+        DB.codes.map(c=>[
+          `<span class="swatch" style="display:inline-flex;align-items:center;gap:7px"><i style="width:14px;height:14px;border-radius:4px;border:1px solid #d5dbe3;background:${c.code};display:inline-block"></i><span class="sub">${c.code}</span></span>`,
+          c.lobby, `<span class="sub">${c.req}</span>`, pill(c.st),
+          `<div class="btn-row">
+            ${can('code.approve') && c.st==='pending' ? `<button class="btn sm primary" data-act="code.approve" data-id="${c.code}">تأیید</button>` : ''}
+            ${can('code.disable') && c.st!=='disabled' ? `<button class="btn sm danger" data-act="code.disable" data-id="${c.code}">غیرفعال</button>` : ''}
+            ${!can('code.approve') ? denyBtn('بدون دسترسی') : ''}
+          </div>`])), '', true)}
+
+      ${panel('جستجوی سریع کاربر',
+        `<input id="quickIn" type="text" placeholder="شناسه، نام کاربری یا شماره تماس…" style="width:100%;margin-bottom:10px">
+         <div id="quickOut"><p class="muted">برای جستجو، شناسه (U-1042)، تگ (@sara_m) یا شماره تماس را وارد کنید.</p></div>`)}
+    </div>
+
+    <div class="grid k2">
+      ${panel('آخرین مسدودی‌ها', table(['کاربر','دلیل','توسط','تاریخ'],
+        DB.blocked.map(b=>[`${b.name}<div class="sub">${b.tag}</div>`, b.reason, `<span class="sub">${b.by}</span>`, `<span class="sub">${b.t}</span>`])), '', true)}
+
+      ${panel('هشدارهای مدیریتی', listRows(
+        DB.notifs.map(n=>({title:n.t, meta:'سیستم', time:n.time, tone:n.tone}))))}
+    </div>`;
+  },
+
+  moderator(){
+    return `
+    <div class="grid k4">
+      ${kpi('بازی‌های امتیازی فعال', num(3), '۲۶ بازیکن داخل بازی', 'ok')}
+      ${kpi('گزارش‌های جدید', num(2), '۲ گزارش بررسی‌نشده', 'warn')}
+      ${kpi('اخراج‌شده از لابی', num(5), 'در ۲۴ ساعت گذشته')}
+      ${kpi('هشدارهای فوری', num(1), 'لابی ۲۱ — پرداخت مشکوک', 'danger')}
+    </div>
+
+    <div class="grid k2">
+      ${panel('بازی‌های امتیازی فعال', table(['بازی','لابی','بازیکنان','وضعیت','عملیات'],
+        DB.rated.filter(g=>g.st==='running').map(g=>[
+          `<span class="sub">${g.id}</span>`, g.lobby, g.players, pill(g.st),
+          `<div class="btn-row">
+            ${can('game.enter') ? `<button class="btn sm primary" data-act="game.enter" data-id="${g.id}">ورود به بازی</button>` : denyBtn('ورود')}
+            ${can('game.players') ? `<button class="btn sm" data-act="game.players" data-id="${g.id}">بازیکنان</button>` 
